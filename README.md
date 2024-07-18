@@ -5,7 +5,7 @@
   <p align="center">
         <a href="https://arxiv.org/abs/2405.17596"><img src='https://img.shields.io/badge/arXiv-GOI-red?logo=arxiv' alt='Paper PDF'></a>
         <a href='https://goi-hyperplane.github.io/'><img src='https://img.shields.io/badge/Project_Page-GOI-green' alt='Project Page'></a>
-        <a href=''><img src='https://img.shields.io/badge/Dataset-MipNeRF360 OV-yellow?logo=databricks' alt='Project Page'></a>
+        <a href='https://drive.google.com/file/d/1JunEiWyPNwGprdqXh-D2dTQPFMaRisDz/view?usp=sharing'><img src='https://img.shields.io/badge/Dataset-MipNeRF360 OV-yellow?logo=databricks' alt='Project Page'></a>
   </p>
 
 <!-- <img src='assets/pipeline.gif'> -->
