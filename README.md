@@ -35,38 +35,60 @@ https://github.com/user-attachments/assets/dd392b1e-3acc-4745-a4f4-940d5d3f44b0
 Visiting our [**Project Page**](https://goi-hyperplane.github.io/) for more result.
 
 ## 🔧 Installation
-- create a new conda enviroment
-
-```
-conda create -n goi python=3.10
-conda activate goi
-```
-
-- install pytorch (or use your own if it is compatible with ```xformers```)
-```
-conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.7 -c pytorch -c nvidia
-```
-- install ```xformers``` for momory-efficient attention
-```
-conda install xformers -c xformers
-```
-- install ```pip``` packages
-```
-pip install kiui scipy opencv-python-headless kornia omegaconf imageio imageio-ffmpeg  seaborn==0.12.0 plyfile ninja tqdm diffusers transformers accelerate timm einops matplotlib plotly typing argparse gradio kaleido==0.1.0.post1
-pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
-pip install "git+https://github.com/ashawkey/diff-gaussian-rasterization.git"
-```
-
 - clone this repo:
 ```
 git clone https://github.com/Quyans/GOI-Hyperplane.git
 cd GOI-Hyperplane
 ```
 
-<!-- - download the pre-trained model by:
+- set up a new conda environment
 ```
-wget https://huggingface.co/imlixinyang/director3d/resolve/main/model.ckpt?download=true -O model.ckpt
-``` -->
+conda env create --file environment.yml
+conda activate goi
+```
+
+## 📚 Data Preparation
+We use datasets in the COLMAP format. For your own dataset, you can use the convert.py script. Refer to [3DGS](https://github.com/graphdeco-inria/gaussian-splatting?tab=readme-ov-file#processing-your-own-scenes) for specific usage.
+
+In addition to RGB data, we also use pixel-aligned semantic feature maps. Specifically, we use APE as our vision-language model to extract semantic features from images.
+
+First, install our modified [APE repository](https://github.com/Atrovast/APE). Then, run the following command to extract semantic features from all RGB images and save them in the `clip_feat` folder under the scene path:
+```shell
+cd ../APE
+python demo/demo_lazy.py -i <scene_path>/images/* --feat-out <scene_path>/clip_feat/
+```
+
+After preparing the depth maps, your scene folder should look like this:
+```
+scene_path
+├── clip_feat/
+├── images/
+├── sparse/
+└── ...
+```
+
+## 🚋 Training
+To reconstruct the 3D scene along with the semantic features, run the following command:
+```shell
+python train.py -s <scene path> -m <model path> -i <alternative image path>
+```
+
+Ensure that the resolution of the feature maps matches the resolution of the RGB images. For example, if you're using images from the `images_4` folder to extract semantic features, use the `-i images_4` option in the `train.py` script.
+
+For detailed usage instructions for `train.py`, please refer to the [3DGS documentation](https://github.com/graphdeco-inria/gaussian-splatting?tab=readme-ov-file#running).
+
+## 👀 Visualization
+
+After completing the reconstruction, you can visualize the results using our GUI. 
+
+First, download the language model of APE from [here](), and place it in the `models` folder in the root directory.
+
+To start the GUI, run the following command:
+```shell
+python gui/main_test.py --config gui/configs/config_test.yaml
+```
+Note: A few additional models will be automatically downloaded the first time you run the script.
+
 
 ## Citation
 
