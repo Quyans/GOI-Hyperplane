@@ -32,7 +32,7 @@ GOI can locate 3D gaussians of interests as directed by open-vocabulary prompts.
 
 https://github.com/user-attachments/assets/dd392b1e-3acc-4745-a4f4-940d5d3f44b0
 
-Visiting our [**Project Page**](https://goi-hyperplane.github.io/) for more result.
+Visiting our [**Project Page**](https://quyans.github.io/GOI-Hyperplane/) for more result.
 
 ## 🔧 Installation
 - clone this repo:
