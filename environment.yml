@@ -1,0 +1,29 @@
+name: gsg
+channels:
+  - pytorch
+  - conda-forge
+  - nvidia
+  - defaults
+dependencies:
+  - plyfile=0.8.1
+  - python=3.10.13
+  - pip=22.3.1
+  - pytorch==2.0.1
+  - torchvision==0.15.2
+  - torchaudio==2.0.2
+  - pytorch-cuda=11.7
+  - tqdm
+  - einops
+  - pip:
+    - submodules/diff-gaussian-rasterization
+    - submodules/simple-knn
+    - trimesh
+    - kiui
+    - pymeshlab
+    - rembg
+    - open3d
+    - scipy
+    - dearpygui
+    - omegaconf
+    - open_clip_torch
+    - clip@git+https://github.com/openai/CLIP.git

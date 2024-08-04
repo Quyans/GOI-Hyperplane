@@ -1,0 +1,12 @@
+data/
+__pycache__/
+build/
+simple_knn.egg-info/
+output/
+.vscode/
+
+guidance/test_img/
+guidance/*.png
+testfolder/
+*.pth
+*.png
