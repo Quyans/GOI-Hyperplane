@@ -1,4 +1,4 @@
-name: gsg
+name: goi
 channels:
   - pytorch
   - conda-forge
@@ -26,4 +26,8 @@ dependencies:
     - dearpygui
     - omegaconf
     - open_clip_torch
+    - transformations
+    - transformers==4.38.1
+    - yapf
+    - pycocotools
     - clip@git+https://github.com/openai/CLIP.git
