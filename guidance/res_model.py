@@ -11,9 +11,8 @@ import subprocess, io, os, sys, time
 # sys.path.append(groundingDINO_path)
 # sys.path.append(groundingDINO_path_fromguidance)
 
-sys.path.append("../GOI-Hyperplane")
-sys.path.append("../GOI-Hyperplane/ext")
-sys.path.append("../GOI-Hyperplane/ext/GroundingDINO")
+sys.path.append("ext")
+sys.path.append("ext/GroundingDINO")
 
 
 from torchvision import transforms
@@ -84,7 +83,8 @@ def load_model_hf(model_config_path, repo_id, filename, device='cpu'):
 
 def get_sam_vit_h_4b8939():
     if not os.path.exists(sam_checkpoint):
-        result = subprocess.run(['wget', 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth'], check=True)
+        os.makedirs(os.path.dirname(sam_checkpoint))
+        result = subprocess.run(['wget', 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth', '-O', sam_checkpoint], check=True)
 
 def plot_boxes_to_image(image_pil, tgt):
     H, W = tgt["size"]
@@ -139,7 +139,7 @@ def plot_boxes_to_image(image_pil, tgt):
 config_file = "./ext/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
 ckpt_repo_id = "ShilongLiu/GroundingDINO"
 ckpt_filenmae = "groundingdino_swint_ogc.pth"
-sam_checkpoint = './sam_vit_h_4b8939.pth' 
+sam_checkpoint = './models/sam_vit_h_4b8939.pth' 
 
 class RES_MODEL(nn.Module):
     def __init__(
