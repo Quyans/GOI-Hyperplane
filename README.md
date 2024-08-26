@@ -81,7 +81,7 @@ For detailed usage instructions for `train.py`, please refer to the [3DGS docume
 
 After completing the reconstruction, you can visualize the results using our GUI. 
 
-First, download the language model of APE from [here](), and place it in the `models` folder in the root directory.
+First, download the language model of APE from [here](https://drive.google.com/drive/folders/1r7oe-1S58u1QQFouAXn4n6abtfwPOtDF), and place it in the `models` folder in the root directory.
 
 To start the GUI, run the following command:
 ```shell
@@ -89,6 +89,7 @@ python gui/main_test.py --config gui/configs/config_test.yaml
 ```
 Note: A few additional models will be automatically downloaded the first time you run the script.
 
+You can download our [pre-trained scenes](https://drive.google.com/drive/folders/1a0TnchJ-ePpBSO7VHlRCsDs7zJyOCGM9) for evaluation. Please change the `source_path` option in `config_test.yaml` to the folder path of the evaluation scene.
 
 ## Citation
 
