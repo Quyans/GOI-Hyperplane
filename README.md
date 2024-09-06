@@ -47,6 +47,14 @@ conda env create --file environment.yml
 conda activate goi
 ```
 
+- If you confront with any problems at the pip installation stage, you can try the following command in the `goi` environment:
+```
+conda activate goi
+pip install submodules/diff-gaussian-rasterization submodules/simple-knn
+pip install trimesh kiui pymeshlab rembg open3d scipy dearpygui omegaconf open_clip_torch transformations transformers==4.38.1 yapf pycocotools
+pip install clip@git+https://github.com/openai/CLIP.git
+```
+
 ## 📚 Data Preparation
 We use datasets in the COLMAP format. For your own dataset, you can use the convert.py script. Refer to [3DGS](https://github.com/graphdeco-inria/gaussian-splatting?tab=readme-ov-file#processing-your-own-scenes) for specific usage.
 
