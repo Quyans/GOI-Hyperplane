@@ -57,6 +57,7 @@ First, install our modified [APE repository](https://github.com/Atrovast/APE). T
 cd ../APE
 python demo/demo_lazy.py -i <scene_path>/images/* --feat-out <scene_path>/clip_feat/
 ```
+- **Due to the high dimensionality of pixel-aligned feature encoded by APE, we tend to use lower resolution (< 1.6k) images for encoding (i.e. `images_4` folder for Mip360 dataset)**
 
 After preparing the depth maps, your scene folder should look like this:
 ```
