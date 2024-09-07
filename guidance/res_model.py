@@ -83,7 +83,7 @@ def load_model_hf(model_config_path, repo_id, filename, device='cpu'):
 
 def get_sam_vit_h_4b8939():
     if not os.path.exists(sam_checkpoint):
-        os.makedirs(os.path.dirname(sam_checkpoint))
+        os.makedirs(os.path.dirname(sam_checkpoint), exist_ok=True)
         result = subprocess.run(['wget', 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth', '-O', sam_checkpoint], check=True)
 
 def plot_boxes_to_image(image_pil, tgt):

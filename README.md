@@ -77,7 +77,7 @@ scene_path
 ```
 
 ## 🚋 Training
-To reconstruct the 3D scene along with the semantic features, run the following command:
+Our method builds on 3D semantic fields generated from pre-trained 3DGS scenes. First, you need to run the training script from the original 3DGS project. Then, to reconstruct the 3D semantic field, please run the following command, using the -m option to specify the path to the pre-trained scene.
 ```shell
 python train.py -s <scene path> -m <model path> -i <alternative image path>
 ```
