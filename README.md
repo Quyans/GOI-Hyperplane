@@ -65,7 +65,7 @@ First, install our modified [APE repository](https://github.com/Atrovast/APE). T
 cd ../APE
 python demo/demo_lazy.py -i <scene_path>/images/* --feat-out <scene_path>/clip_feat/
 ```
-- **Due to the high dimensionality of pixel-aligned feature encoded by APE, we tend to use lower resolution (< 1.6k) images for encoding (i.e. `images_4` folder for Mip360 dataset)**
+- **Due to the high dimensionality of pixel-aligned feature encoded by APE, we tend to use lower resolution (< 1.6k) images for encoding (e.g. `images_4` folder for Mip360 dataset)**
 
 After preparing the depth maps, your scene folder should look like this:
 ```
@@ -77,7 +77,9 @@ scene_path
 ```
 
 ## 🚋 Training
-Our method builds on 3D semantic fields generated from pre-trained 3DGS scenes. First, you need to run the training script from the original 3DGS project. Then, to reconstruct the 3D semantic field, please run the following command, using the -m option to specify the path to the pre-trained scene.
+Our method leverages 3D semantic fields generated from pre-trained 3DGS scenes. To begin, you must run the training script provided in the original 3DGS project. Once the training is complete, rename the output folder from the 3DGS training (e.g., `iteration_30000`) to `iteration_1`.
+
+Next, to reconstruct the 3D semantic field, run the following command. Be sure to use the `-m` option to specify the path to the pre-trained scene.
 ```shell
 python train.py -s <scene path> -m <model path> -i <alternative image path>
 ```
