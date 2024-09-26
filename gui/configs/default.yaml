@@ -1,6 +1,6 @@
-load: /home/dsh/GOI/output/360_room/point_cloud/iteration_1500
+load: output/360_room/point_cloud/iteration_1500
 
-source_path: /home/dsh/datasets/360/room
+source_path: datasets/360/room
 
 images: images_4/
 prompt: ""
@@ -25,7 +25,7 @@ preload: null
 save_guidance: true
 save_guidance_interval: 5
 sd_guidance_scale: 100
-white_background: True
+white_background: False
 
 # training option
 lambda_sd: 10
