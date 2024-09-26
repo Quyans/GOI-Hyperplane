@@ -1,0 +1,58 @@
+load: /home/dsh/GOI/output/360_room/point_cloud/iteration_1500
+
+source_path: /home/dsh/datasets/360/room
+
+images: images_4/
+prompt: ""
+negative_prompt: "ugly, bad anatomy, blurry, pixelated, obscure, unnatural colors, poor lighting, dull, unclear, cropped, lowres, low quality, artifacts, duplicate, morbid, mutilated, poorly drawn face, deformed, dehydrated, bad proportions."
+target_prompt: "sofa in dark green"
+target_res_prompt: "sofa in dark green"
+
+vlm: ape
+radius: 2
+outdir: output/exp
+save_path: m360
+gui: True
+
+H: 520
+W: 780
+
+fovy: 60
+sh_degree: 3
+input: null
+preload: null
+
+save_guidance: true
+save_guidance_interval: 5
+sd_guidance_scale: 100
+white_background: True
+
+# training option
+lambda_sd: 10
+max_epochs: 40
+batch_size: 2
+
+# original option in dreamgaussian
+position_lr_init: 0.001
+position_lr_final: 0.00002
+position_lr_delay_mult: 0.02
+position_lr_max_steps: 300
+feature_lr: 0.01
+opacity_lr: 0.05
+scaling_lr: 0.001 #0.005 
+rotation_lr: 0.01 #0.005 
+semantic_lr: 0.005
+
+position_finetune: True
+feature_finetune: True
+opacity_finetune: True
+scaling_finetune: True
+rotation_finetune: True
+semantic_finetune: True
+
+percent_dense: 0.01
+density_start_iter: 0
+density_end_iter: 3400
+densification_interval: 100
+opacity_reset_interval: 700
+densify_grad_threshold: 0.01

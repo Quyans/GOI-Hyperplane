@@ -222,7 +222,8 @@ class Renderer:
 
             # load from saved ply
             self.gaussians.load_ply(pply)
-            self.MLP = SemanticModel.load(psem)
+            if os.path.exists(psem):
+                self.MLP = SemanticModel.load(psem)
             if os.path.exists(plut):
                 self.LUT = torch.load(plut)
 

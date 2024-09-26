@@ -127,7 +127,7 @@ def generate_video(img_list, save_path):
     print("save video path", save_path)
 
 
-def clip_color(cos_sim, height, width, res_finetuned=False, device='cuda'):
+def clip_color(cos_sim, height, width, thresh=0.7, res_finetuned=False, coloring=False, device='cuda'):
     # 着色方案不一样
     if res_finetuned:
         non_zero_elements = cos_sim[cos_sim != 0]
@@ -138,7 +138,7 @@ def clip_color(cos_sim, height, width, res_finetuned=False, device='cuda'):
         # rel = torch.clamp((cos_sim - min_non_zero) / (cos_sim.max() - min_non_zero + 0.1), 0, 1)
         rel = torch.clamp(cos_sim + 0.2, 0.1, 0.9)
     else:
-        rel = torch.clamp((cos_sim - 0.75) / (cos_sim.max() - 0.7), 0, 1)
+        rel = torch.clamp((cos_sim - thresh - 0.05) / (cos_sim.max() - thresh), 0, 1)  # rel = torch.clamp((cos_sim - 0.47) / (0.49 - 0.47), 0, 1)  ##CLIP-only
 
     cmap = matplotlib.colormaps.get_cmap("turbo")
 
@@ -147,8 +147,7 @@ def clip_color(cos_sim, height, width, res_finetuned=False, device='cuda'):
     masked_hi = heat_img * cos_sim.unsqueeze(1) * 0.9
     masked_hi[cos_sim == 0] = 1
     masked_hi[:, 3] = 1
-    # 如果想用原本的颜色作为高光颜色，可以将下面的代码取消注释； 如果用相似度作为高光颜色就把下面两行注释掉
-    if True:
+    if not coloring or res_finetuned:
         masked_hi[cos_sim != 0] = 0
     masked_hi = masked_hi.reshape(height, width, 4)
 
