@@ -61,9 +61,9 @@ class ClipSimMeasure:
         return
 
     def encode_text(self, text):
-        text = clip.tokenize(text).to(self.device)
+        text = clip.tokenize([text] + self.canon).to(self.device)
         with torch.no_grad():
-            text_features = self.clip_pretrained.encode_text([text] + self.canon).type(torch.float32)
+            text_features = self.clip_pretrained.encode_text(text).type(torch.float32)
             text_features = (text_features / text_features.norm(dim=-1, keepdim=True)).to(self.device)
         self.text_feature = text_features
         # return text_features
@@ -90,14 +90,16 @@ class ApeSimMeasure:
         self.loaded = False
 
     def load_model(self):
+        if self.loaded:
+            return
         self.model_lang = EVA02CLIP(
             clip_model="EVA02-CLIP-bigE-14-plus",
             cache_dir=None,
             # dtype="float16",
         ).to(self.device)
-        self.model_lang.load_state_dict(torch.load('/ssd/dsh/models/model_language.pth'))
+        self.model_lang.load_state_dict(torch.load('./models/model_language.pth'))
         self.cls_embd = VisionLanguageAlign(256, 1024).to(self.device)
-        self.cls_embd.load_state_dict(torch.load('/ssd/dsh/models/class_embed.pth'))
+        self.cls_embd.load_state_dict(torch.load('./models/class_embed.pth'))
         self.loaded = True
 
     def encode_text(self, text):
@@ -140,6 +142,7 @@ class GUI:
         self.buffer_image = np.ones((self.W, self.H, 3), dtype=np.float32)
         self.buffer_sem = np.zeros((self.W, self.H, SEM_DIM), dtype=np.float32)
         self.sim_coloring = True
+        self.sim_binary = False
         
         self.need_update = True  # update buffer_image
         self.loading = False
@@ -190,6 +193,7 @@ class GUI:
         # 3d manipulation
         self.gs_index = None
         self.retrieved = False
+        self.motion = None
 
         # training stuff
         self.training = False
@@ -284,6 +288,7 @@ class GUI:
         # 3d manipulation
         self.gs_index = None
         self.retrieved = False
+        self.motion = None
 
         # training stuff
         self.training = False
@@ -356,7 +361,7 @@ class GUI:
         torch.backends.cudnn.benchmark = True
 
     @torch.no_grad()
-    def compute_similarity(self, embedding_feature):
+    def compute_similarity(self, embedding_feature, out_bg_mask=None):
         dec_feature = self.renderer.MLP(embedding_feature)
         if self.renderer.LUT is not None:
             sem_logit = torch.softmax(dec_feature * 10, dim=-1).argmax(dim=-1)
@@ -367,23 +372,30 @@ class GUI:
         if self.res_finetuned:
             # 使用res finetune的MLP作为分割效果
             logit = self.resMLP(normed_feature.cuda()).squeeze()
-            print(logit.max(), logit.min())
+            # print(logit.max(), logit.min())
             sim = (logit).sigmoid().squeeze(-1)
             thresh = 0.5
         else:
             sim = self.vlm.compute_similarity(normed_feature)
             thresh = self.clip_feature_thresh
-        sim[sim < thresh] = 0
+        _bg_mask = sim < thresh
+        if out_bg_mask is not None:
+            out_bg_mask[:] = _bg_mask
+        sim[_bg_mask] = 0
         return sim
 
     @torch.no_grad()
     def set_clip_mask(self):
-        cos_sim = self.compute_similarity(self.buffer_sem)
-
-        masked_hi = clip_color(cos_sim, height=self.H, width=self.W, thresh=0.7, res_finetuned=self.res_finetuned, coloring=self.sim_coloring, device=self.device)
-        colormap, transparency = masked_hi[:, :, :3], masked_hi[:, :, 3:]
-        self.buffer_image = (colormap * transparency * self.color_overlay_ratio +
-                             self.buffer_image * (1 - transparency * self.color_overlay_ratio)).clip(0, 1)
+        bg_mask = torch.zeros(self.H * self.W, dtype=torch.bool, device=self.device)
+        cos_sim = self.compute_similarity(self.buffer_sem, bg_mask)
+        if not self.sim_binary:
+            colored_img, alpha = clip_color(cos_sim, bg_mask, height=self.H, width=self.W, thresh=0.7, res_finetuned=self.res_finetuned, coloring=self.sim_coloring, device=self.device)
+            opa = alpha * self.color_overlay_ratio
+            self.buffer_image = (colored_img * opa + self.buffer_image * (1 - opa)).clip(0, 1)
+        else:
+            mask = cos_sim > 0
+            binary_mask = mask.reshape(self.H, self.W).float().unsqueeze(-1).repeat(1, 1, 3)
+            self.buffer_image = binary_mask.contiguous().clamp(0, 1).contiguous().detach().cpu().numpy()
 
     def compute_relative_gs_index(self):
         gs_embedding = self.renderer.gaussians.get_semantics
@@ -946,7 +958,7 @@ class GUI:
 
                     dpg.add_button(label="init",
                                    tag="_button_init",
-                                   callback=self.load_models)
+                                   callback=self.load_models_in_thread)
                     dpg.bind_item_theme("_button_init", theme_button)
 
 
@@ -1000,16 +1012,27 @@ class GUI:
                         callback=callback_update_sim_color,
                     )
 
-                def callback_update_res_prompt(sender, app_data):
-                    self.res_prompt = app_data
+                with dpg.group(horizontal=True):
+                    def callback_update_res_prompt(sender, app_data):
+                        self.res_prompt = app_data
 
-                dpg.add_input_text(
-                    label="RES",
-                    tag="_res_prompt",
-                    default_value=self.res_prompt,
-                    # on_enter=True,
-                    callback=callback_update_res_prompt,
-                )
+                    dpg.add_input_text(
+                        label="RES",
+                        tag="_res_prompt",
+                        default_value=self.res_prompt,
+                        # on_enter=True,
+                        callback=callback_update_res_prompt,
+                    )
+
+                    def callback_update_sim_binary(sender, app_data):
+                        self.sim_binary = app_data
+                        self.need_update = True
+
+                    dpg.add_checkbox(
+                        label="binary",
+                        default_value=self.sim_binary,
+                        callback=callback_update_sim_binary,
+                    )
 
                 def callback_set_clip_feature_thresh(sender, app_data):
                     self.clip_feature_thresh = app_data
@@ -1149,6 +1172,7 @@ class GUI:
                             res_mask = res_mask.to(self.device)
                             self.group_points(res_mask=res_mask)
                         self.renderer.gaussians._xyz.requires_grad = False
+                        self.motion = torch.zeros_like(self.renderer.gaussians._xyz)
                         print('[INFO] Object retrieved.')
 
                     dpg.add_button(
@@ -1175,6 +1199,8 @@ class GUI:
                     dpg.bind_item_theme("_button_3d_del", theme_button)
 
                     def callback_retrieval_exit(sender, app_data):
+                        self.renderer.gaussians._xyz -= self.motion
+                        self.motion = None
                         self.renderer.gaussians._xyz.requires_grad = True
                         self.retrieved = False
                         self.rel_gs_index = None
@@ -1189,6 +1215,8 @@ class GUI:
                     dpg.bind_item_theme("_button_retrieve_exit", theme_button)
 
                     def callback_retrieval_reset(sender, app_data):
+                        self.renderer.gaussians._xyz -= self.motion
+                        self.motion.zero_()
                         self.gs_index = None
                         self.need_update = True
 
@@ -1380,6 +1408,12 @@ class GUI:
             # just the pixel coordinate in image
             self.mouse_loc = np.array(app_data)
 
+        def obj_move(x, y, z):
+            if self.retrieved:
+                _mov = torch.from_numpy(np.array([x, y, z], dtype=np.float32) * 0.1).to(self.device)
+                ret_mask = self.rel_gs_index
+                self.motion[ret_mask] += _mov
+                self.renderer.gaussians._xyz[ret_mask] += _mov
         
         def callback_key_press(sender, app_data):
 
@@ -1394,13 +1428,18 @@ class GUI:
                 dpg.mvKey_D: lambda: self.cam.pan(-_v, 0, 0),  # d
                 dpg.mvKey_Q: lambda: self.cam.pan(0, _v, 0),  # q
                 dpg.mvKey_E: lambda: self.cam.pan(0, -_v, 0),  # e
+
+                dpg.mvKey_J: lambda: obj_move(-1, 0, 0),  # j
+                dpg.mvKey_L: lambda: obj_move(1, 0, 0),  # l
+                dpg.mvKey_I: lambda: obj_move(0, -1, 0),  # i
+                dpg.mvKey_K: lambda: obj_move(0, 1, 0),  # k
+                dpg.mvKey_U: lambda: obj_move(0, 0, -1),  # u
+                dpg.mvKey_O: lambda: obj_move(0, 0, 1),  # o
                 
                 dpg.mvKey_T: lambda: self.cam.orbit(0, 0, 180),  # t
             }
 
             if app_data in funcs.keys():
-                # print(app_data)
-                print(self.cam.get_cam_location())
                 funcs[app_data]()
                 self.need_update = True
 
@@ -1530,6 +1569,13 @@ class GUI:
         if self.opt.target_prompt is not None:
             self.clip_prompt = self.opt.target_prompt
             self.vlm.encode_text(self.clip_prompt)
+        print(f"[INFO] loading models finished!")
+
+    def load_models_in_thread(self):
+        import threading
+        # 创建并启动子线程
+        thread = threading.Thread(target=self.load_models)
+        thread.start()
 
     def pred_res_mask(self, prompt, width=512, height=512):
 
@@ -1736,16 +1782,20 @@ class GUI:
             out_img = out["image"]
             out_semantic = out["semantics"]
 
-            cos_sim = self.compute_similarity(out_semantic.permute(1, 2, 0).detach().cuda().reshape(-1, SEM_DIM))
+            bg_mask = torch.zeros(self.render_resolution_h * self.render_resolution_w, dtype=torch.bool, device=self.device)
+            cos_sim = self.compute_similarity(out_semantic.permute(1, 2, 0).detach().cuda().reshape(-1, SEM_DIM), bg_mask)
 
             rgb = out_img.permute(1, 2, 0).contiguous().clamp(0, 1).contiguous().detach().cpu().numpy()
 
-            masked_hi = clip_color(cos_sim, self.render_resolution_h, self.render_resolution_w, 
-                                   thresh=self.clip_feature_thresh, res_finetuned=self.res_finetuned, device=self.device)
-
-            colormap, transparency = masked_hi[:, :, :3], masked_hi[:, :, 3:]
-            final_img = (colormap * transparency * self.color_overlay_ratio +
-                         rgb * (1 - transparency * self.color_overlay_ratio)).clip(0, 1)
+            if not self.sim_binary:
+                colored_img, alpha = clip_color(cos_sim, bg_mask, self.render_resolution_h, self.render_resolution_w, 
+                                   thresh=0.7, res_finetuned=self.res_finetuned, coloring=self.sim_coloring, device=self.device)
+                opa = alpha * self.color_overlay_ratio
+                final_img = (colored_img * opa + rgb * (1 - opa)).clip(0, 1)
+            else:
+                mask = cos_sim > 0
+                binary_mask = mask.reshape(self.render_resolution_h, self.render_resolution_w).float().unsqueeze(-1).repeat(1, 1, 3)
+                final_img = binary_mask.contiguous().clamp(0, 1).contiguous().detach().cpu().numpy()
 
             final_img = Image.fromarray((final_img * 255).astype('uint8'))
             final_img.save(f"{save_path}/{str(ind)}.png")

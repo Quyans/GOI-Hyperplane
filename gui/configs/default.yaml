@@ -1,38 +1,36 @@
-load: output/360_room/point_cloud/iteration_1500
+load: output/360_room/point_cloud/iteration_1500  # path to the model to load
+source_path: datasets/360/room  # path to the dataset
 
-source_path: datasets/360/room
+images: images_8/  # change this to images_2/4/8 (if existing) for faster loading
+target_prompt: "sofa in dark green"  # default text prompt for the segmentation
+target_res_prompt: "sofa in dark green"  # prompt for res, same as target_prompt
 
-images: images_4/
-prompt: ""
-negative_prompt: "ugly, bad anatomy, blurry, pixelated, obscure, unnatural colors, poor lighting, dull, unclear, cropped, lowres, low quality, artifacts, duplicate, morbid, mutilated, poorly drawn face, deformed, dehydrated, bad proportions."
-target_prompt: "sofa in dark green"
-target_res_prompt: "sofa in dark green"
-
-vlm: ape
+vlm: ape  # [ape, clip]
 radius: 2
 outdir: output/exp
-save_path: m360
-gui: True
+save_path: m360  # saving in <outdir>/<save_path>
 
+### rendering options
+gui: True
+white_background: False
 H: 520
 W: 780
-
 fovy: 60
 sh_degree: 3
-input: null
-preload: null
 
+### inpainting options
+prompt: ""
+negative_prompt: "ugly, bad anatomy, blurry, pixelated, obscure, unnatural colors, poor lighting, dull, unclear, cropped, lowres, low quality, artifacts, duplicate, morbid, mutilated, poorly drawn face, deformed, dehydrated, bad proportions."
 save_guidance: true
 save_guidance_interval: 5
 sd_guidance_scale: 100
-white_background: False
 
-# training option
+### training options
 lambda_sd: 10
 max_epochs: 40
 batch_size: 2
 
-# original option in dreamgaussian
+### options for finetuning, not used
 position_lr_init: 0.001
 position_lr_final: 0.00002
 position_lr_delay_mult: 0.02

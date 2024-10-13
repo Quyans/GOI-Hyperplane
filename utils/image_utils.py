@@ -126,8 +126,27 @@ def generate_video(img_list, save_path):
     out.release()
     print("save video path", save_path)
 
+turbo_colormap = torch.tensor(matplotlib.colormaps.get_cmap('turbo').colors, device='cuda')
+def cmap(value):
+    """
+    Apply Turbo colormap to a normalized value tensor. For cuda acceleration, the colormap is preloaded as a tensor.
+    
+    Args:
+        value (torch.Tensor): A tensor with values in the range [0, 1].
+    
+    Returns:
+        torch.Tensor: A tensor with the same shape as input, but with an additional
+                      dimension for RGB channels.
+    """
+    # assert torch.all(value >= 0) and torch.all(value <= 1), "Input values should be in the range [0, 1]"
+    
+    # Scale the input values to the range [0, len(TURBO_COLORS) - 1]
+    indices = (value * (turbo_colormap.shape[0] - 1)).long()
+    # Gather the corresponding colors
+    colored = turbo_colormap[indices]
+    return colored
 
-def clip_color(cos_sim, height, width, thresh=0.7, res_finetuned=False, coloring=False, device='cuda'):
+def clip_color(cos_sim, bg_mask, height, width, thresh=0.7, res_finetuned=False, coloring=False, device='cuda'):
     # 着色方案不一样
     if res_finetuned:
         non_zero_elements = cos_sim[cos_sim != 0]
@@ -140,15 +159,29 @@ def clip_color(cos_sim, height, width, thresh=0.7, res_finetuned=False, coloring
     else:
         rel = torch.clamp((cos_sim - thresh - 0.05) / (cos_sim.max() - thresh), 0, 1)  # rel = torch.clamp((cos_sim - 0.47) / (0.49 - 0.47), 0, 1)  ##CLIP-only
 
-    cmap = matplotlib.colormaps.get_cmap("turbo")
+    if coloring:
+        heat_img = cmap(rel)
+        # heat_img = torch.from_numpy(heat_img).to(device)
+        heat_img[bg_mask] = 1
+        masked_hi = heat_img.reshape(height, width, 3).contiguous().clamp(
+            0, 1).contiguous().detach().cpu().numpy()
+    else:
+        masked_hi = 1
+    
+    if not coloring or res_finetuned:
+        alpha = torch.ones_like(cos_sim).to(device)
+        alpha[~bg_mask] = 0
+        alpha = alpha.reshape(height, width, 1).detach().cpu().numpy()
+    else:
+        alpha = 1
 
-    heat_img = cmap(rel.detach().cpu().numpy()).astype(np.float32)
-    heat_img = torch.from_numpy(heat_img).to(device)
+    return masked_hi, alpha
+
     masked_hi = heat_img * cos_sim.unsqueeze(1) * 0.9
-    masked_hi[cos_sim == 0] = 1
+    masked_hi[bg_mask] = 1
     masked_hi[:, 3] = 1
     if not coloring or res_finetuned:
-        masked_hi[cos_sim != 0] = 0
+        masked_hi[~bg_mask] = 0
     masked_hi = masked_hi.reshape(height, width, 4)
 
     masked_hi = (masked_hi.contiguous().clamp(
