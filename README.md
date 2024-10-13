@@ -23,7 +23,7 @@ GOI can locate 3D gaussians of interests as directed by open-vocabulary prompts.
 
 **🔥 News**:
 
-- 🥰 Check out our new gradio demo by simply running ```python app.py```.
+- We have updated the GUI and released the evaluation code.
 
 
 ## 📖 Open-vocabulary Query Results
@@ -94,13 +94,26 @@ After completing the reconstruction, you can visualize the results using our GUI
 
 First, download the language model of APE from [here](https://drive.google.com/drive/folders/1r7oe-1S58u1QQFouAXn4n6abtfwPOtDF), and place it in the `models` folder in the root directory.
 
-To start the GUI, run the following command:
+Run the following command to use the updated GUI:
 ```shell
-python gui/main_test.py --config gui/configs/config_test.yaml
+python gui/main.py --config gui/configs/default.yaml
 ```
-Note: A few additional models will be automatically downloaded the first time you run the script.
+- A few additional models will be automatically downloaded the first time you run the script.
 
-You can download our [pre-trained scenes](https://drive.google.com/drive/folders/1a0TnchJ-ePpBSO7VHlRCsDs7zJyOCGM9) for evaluation. Please change the `source_path` option in `config_test.yaml` to the folder path of the evaluation scene.
+- You can download our [pre-trained scenes](https://drive.google.com/drive/folders/1a0TnchJ-ePpBSO7VHlRCsDs7zJyOCGM9) for evaluation. 
+
+- Please look up to the [documentation](gui/gui_doc.md) and the configuration file for guidance on using the new GUI and performing **evaluation operations**.
+
+## Evaluation
+Since our work utilizes a 2D RES model, you'll need to use the GUI to query objects and save the segmentation masks. For further guidance, you can refer to the [GUI documentation](gui/gui_doc.md).
+
+Once you have obtained the segmentation for a scene or the entire evaluation set, you can run the evaluation code.
+
+```shell
+python eval_seg.py --eval_root <eval dataset path> --saving_root <mask saving path> --dataset <m360 or replica> --scene_list [scenes to eval]
+```
+
+Depending on where you save the masks, you may need to adjust the format of their paths in the code."
 
 ## Citation
 
