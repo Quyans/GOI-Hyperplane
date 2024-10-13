@@ -14,7 +14,7 @@ You can also modify certain configuration via the command line, which will overr
 python gui/main.py --config gui/configs/default.yaml load='output/room/point_cloud/iteration_1500'
 ```
 
-![The GUI appearance](assets/app.png)
+![The GUI appearance](../assets/gui_appearance.png)
 
 The GUI appearance
 
@@ -77,7 +77,7 @@ TBD
 
 In the `>>Query` section, there is a save button and a text box. The image on the left will be saved with the name provided in the text box. The full path will be `<outdir>/<save_path>/<img_name>.png`. The `outdir` and `save_path` are defined in the configuration file, while the `save_path` and `img_name` can be modified directly within the GUI in the two available text boxes.
 
-![image.png](assets/inbox.png)
+![image.png](../assets/gui_text_box.png)
 
 ### Eval configuration
 
