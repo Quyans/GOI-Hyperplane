@@ -5,7 +5,8 @@
   <p align="center">
         <a href="https://arxiv.org/abs/2405.17596"><img src='https://img.shields.io/badge/arXiv-GOI-red?logo=arxiv' alt='Paper PDF'></a>
         <a href='https://quyans.github.io/GOI-Hyperplane/'><img src='https://img.shields.io/badge/Project_Page-GOI-green' alt='Project Page'></a>
-        <a href='https://drive.google.com/file/d/1JunEiWyPNwGprdqXh-D2dTQPFMaRisDz/view?usp=sharing'><img src='https://img.shields.io/badge/Dataset-MipNeRF360 OV-yellow?logo=databricks' alt='Project Page'></a>
+        <a href='https://drive.google.com/file/d/1JunEiWyPNwGprdqXh-D2dTQPFMaRisDz/view?usp=sharing'><img src='https://img.shields.io/badge/Dataset-MipNeRF360 OV-yellow?logo=databricks' alt='MipNeRF360-OV'></a>
+        <a href='https://drive.google.com/file/d/1n8qf47GFvcWVgKkk0QQnc3VeEVDqxkBr/view'><img src='https://img.shields.io/badge/Dataset-Replica-yellow?logo=databricks' alt='Replica'></a>
   </p>
 
 <!-- <img src='assets/pipeline.gif'> -->
@@ -24,6 +25,7 @@ GOI can locate 3D gaussians of interests as directed by open-vocabulary prompts.
 **🔥 News**:
 
 - We have updated the GUI and released the evaluation code.
+- We provide the processed Replica dataset used in our paper, which is derived from the Semantic-NeRF version.
 
 
 ## 📖 Open-vocabulary Query Results
@@ -110,10 +112,10 @@ Since our work utilizes a 2D RES model, you'll need to use the GUI to query obje
 Once you have obtained the segmentation for a scene or the entire evaluation set, you can run the evaluation code.
 
 ```shell
-python eval_seg.py --eval_root <eval dataset path> --saving_root <mask saving path> --dataset <m360 or replica> --scene_list [scenes to eval]
+python eval_seg.py --eval_root <eval dataset path> --saving_root <mask saving path> --dataset <'m360' or 'replica'> --scene_list [scenes to eval]
 ```
 
-Depending on where you save the masks, you may need to adjust the format of their paths in the code."
+Depending on where you save the masks, you may need to adjust the format of their paths in the code.
 
 ## Citation
 
